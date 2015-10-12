@@ -26,10 +26,9 @@ public interface PremiumerListener {
     void onBillingUnavailable();
 
     /**
-     * Invoked when the SkuDetails information is ready.
+     * Invoked when {@link SkuDetails} information is ready.
      *
-     * @param details the SkuDetails class holding the information,
-     *                or {@code null}, if an error occurred.
+     * @param details the {@link SkuDetails} class or {@code null}, if an error occurred.
      */
     void onSkuDetails(SkuDetails details);
 

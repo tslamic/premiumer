@@ -291,6 +291,8 @@ public class Premiumer {
                     mListener.onHideAds();
                 }
             } else {
+                // Note that onHideAds() is purposely not called,
+                // even if mAutoNotifyAds yields true.
                 mListener.onPurchaseInvalidPayload(purchase,
                         getPurchasePayload(), purchase.developerPayload);
             }
@@ -373,7 +375,9 @@ public class Premiumer {
                     final int response = mService.consumePurchase(3, mPackageName, token);
                     if (BILLING_RESPONSE_RESULT_OK == response) {
                         mHandler.obtainMessage(PremiumerHandler.SKU_CONSUMED).sendToTarget();
-                        mHandler.obtainMessage(PremiumerHandler.SHOW_ADS).sendToTarget(); // TODO
+                        if (mAutoNotifyAds) {
+                            mHandler.obtainMessage(PremiumerHandler.SHOW_ADS).sendToTarget();
+                        }
                         mPreferences.edit()
                                 .remove(PREMIUMER_PURCHASE_DATA)
                                 .remove(PREMIUMER_PURCHASE_PAYLOAD)
@@ -510,7 +514,7 @@ public class Premiumer {
     }
 
     private static boolean notOnMainThread() {
-        return Looper.myLooper() != Looper.getMainLooper();
+        return Looper.getMainLooper().getThread() != Thread.currentThread();
     }
 
 }
