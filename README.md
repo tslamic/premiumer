@@ -5,7 +5,7 @@ If your Android app is showing ads, but you would like to offer an option to rem
 First, add a dependency to your `build.gradle`:
 
 ```gradle
-compile 'com.github.tslamic.premiumer:library:1.0'
+compile 'com.github.tslamic.premiumer:library:1.1'
 ```
 
 There is no need to add any `aidl` files. Just ensure you call the appropriate lifecycle methods, for example like so:
