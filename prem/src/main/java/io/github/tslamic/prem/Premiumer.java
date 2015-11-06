@@ -319,7 +319,7 @@ public class Premiumer {
      * @return true if the request was successfully enqueued.
      */
     public boolean requestSkuDetails() {
-        if (!mIsBillingAvailable) {
+        if (!mIsBillingAvailable || mAsyncExecutor.isShutdown()) {
             return false;
         }
         mAsyncExecutor.execute(new Runnable() {
@@ -366,7 +366,7 @@ public class Premiumer {
      * @return true if the request was successfully enqueued.
      */
     public boolean consumeSku() {
-        if (!mIsBillingAvailable) {
+        if (!mIsBillingAvailable || mAsyncExecutor.isShutdown()) {
             return false;
         }
         mAsyncExecutor.execute(new Runnable() {
@@ -467,6 +467,9 @@ public class Premiumer {
     }
 
     private void checkAds() {
+        if (mAsyncExecutor.isShutdown()) {
+            return;
+        }
         mAsyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
