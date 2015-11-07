@@ -188,6 +188,7 @@ public class Premiumer {
             }
             mServiceConnection = null;
             mService = null;
+            mIsBillingAvailable = false;
         }
     }
 
@@ -421,7 +422,7 @@ public class Premiumer {
     }
 
     private boolean ownsSku() {
-        if (!mIsBillingAvailable) {
+        if (!mIsBillingAvailable || null == mService) {
             return false;
         }
         try {
