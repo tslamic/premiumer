@@ -436,7 +436,8 @@ public class Premiumer {
                         final String json = purchases.get(i);
                         final String signature = signatures != null ? signatures.get(i) : null;
                         final Purchase purchase = new Purchase(json, signature);
-                        if (purchase.getSku().equals(mSku)) {
+                        final String sku = purchase.getSku();
+                        if (sku != null && sku.equals(mSku)) {
                             return verifyPurchaseSignature(purchase);
                         }
                     }
