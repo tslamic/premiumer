@@ -36,6 +36,8 @@ public class Premiumer {
         private PremiumerListener mListener;
         private Context mContext;
         private String mSku;
+        private String mLicenseKey;
+        private int mRequestCode = 148;
 
         public Builder(Context context) {
             if (null == context) {
@@ -49,6 +51,14 @@ public class Premiumer {
          */
         public Builder sku(String sku) {
             mSku = sku; // Validated when build() is invoked.
+            return this;
+        }
+
+        /**
+         * Specify the license key
+         */
+        public Builder licenseKey(String licenseKey) {
+            mLicenseKey = licenseKey;
             return this;
         }
 
@@ -87,6 +97,14 @@ public class Premiumer {
         }
 
         /**
+         * Specify the request code.
+         **/
+        public Builder requestCode(int requestCode) {
+            mRequestCode = requestCode;
+            return this;
+        }
+
+        /**
          * Returns a new {@link Premiumer} instance.
          *
          * @throws IllegalStateException if sku has not been set.
@@ -104,7 +122,6 @@ public class Premiumer {
 
     }
 
-    private static final int PREMIUMER_ACTIVITY_RESULT_ID = 0xB00B5;
     private static final String PREMIUMER_PREFS = "__premiumer_prefs";
     private static final String PREMIUMER_PURCHASE_PAYLOAD = "premiumer_payload";
     private static final String PREMIUMER_PURCHASE_DATA = "premiumer_purchase_data";
@@ -116,6 +133,8 @@ public class Premiumer {
     private static final String RESPONSE_PURCHASE_DATA = "INAPP_PURCHASE_DATA";
     private static final String RESPONSE_SIGNATURE = "INAPP_DATA_SIGNATURE";
     private static final String RESPONSE_ITEM_LIST = "INAPP_PURCHASE_ITEM_LIST";
+    private static final String RESPONSE_PURCHASE_DATA_LIST = "INAPP_PURCHASE_DATA_LIST";
+    private static final String RESPONSE_SIGNATURE_LIST = "INAPP_DATA_SIGNATURE_LIST";
     private static final String REQUEST_ITEM_ID_LIST = "ITEM_ID_LIST";
     private static final String BILLING_TYPE = "inapp";
     private static final int BILLING_RESPONSE_RESULT_OK = 0;
@@ -128,6 +147,8 @@ public class Premiumer {
     private final String mPackageName;
     private final Context mContext;
     private final String mSku;
+    private String mLicenseKey;
+    private int mRequestCode;
 
     private ServiceConnection mServiceConnection;
     private boolean mIsBillingAvailable;
@@ -144,6 +165,7 @@ public class Premiumer {
         mHandler = new PremiumerHandler(builder.mListener);
         mSku = builder.mSku;
         mAutoNotifyAds = builder.mAutoNotifyAds;
+        mRequestCode = builder.mRequestCode;
     }
 
     /**
@@ -176,6 +198,7 @@ public class Premiumer {
             }
             mServiceConnection = null;
             mService = null;
+            mIsBillingAvailable = false;
         }
     }
 
@@ -212,7 +235,7 @@ public class Premiumer {
                 mPreferences.edit().putString(PREMIUMER_PURCHASE_PAYLOAD, payload).commit();
                 final PendingIntent pendingIntent = bundle.getParcelable(RESPONSE_BUY_INTENT);
                 activity.startIntentSenderForResult(pendingIntent.getIntentSender(),
-                        PREMIUMER_ACTIVITY_RESULT_ID, new Intent(), 0, 0, 0);
+                        mRequestCode, new Intent(), 0, 0, 0);
                 return true;
             }
         } catch (RemoteException | IntentSender.SendIntentException ignore) {
@@ -246,7 +269,7 @@ public class Premiumer {
         }
 
         // Ignore handling if not related to Premiumer.
-        if (PREMIUMER_ACTIVITY_RESULT_ID != requestCode) {
+        if (mRequestCode != requestCode) {
             return false;
         }
 
@@ -285,7 +308,7 @@ public class Premiumer {
                 .commit();
         if (null != mListener) {
             final Purchase purchase = new Purchase(purchaseData, signature);
-            if (payloadMatches(purchase)) {
+            if (payloadMatches(purchase) && verifyPurchaseSignature(purchase)) {
                 mListener.onPurchaseSuccessful(purchase);
                 if (mAutoNotifyAds) {
                     mListener.onHideAds();
@@ -307,7 +330,7 @@ public class Premiumer {
      * @return true if the request was successfully enqueued.
      */
     public boolean requestSkuDetails() {
-        if (!mIsBillingAvailable) {
+        if (!mIsBillingAvailable || mAsyncExecutor.isShutdown()) {
             return false;
         }
         mAsyncExecutor.execute(new Runnable() {
@@ -354,7 +377,7 @@ public class Premiumer {
      * @return true if the request was successfully enqueued.
      */
     public boolean consumeSku() {
-        if (!mIsBillingAvailable) {
+        if (!mIsBillingAvailable || mAsyncExecutor.isShutdown()) {
             return false;
         }
         mAsyncExecutor.execute(new Runnable() {
@@ -409,15 +432,26 @@ public class Premiumer {
     }
 
     private boolean ownsSku() {
-        if (!mIsBillingAvailable) {
+        if (!mIsBillingAvailable || null == mService) {
             return false;
         }
         try {
             final Bundle items = mService.getPurchases(3, mPackageName, BILLING_TYPE, null);
             final int response = items.getInt(RESPONSE_CODE);
             if (BILLING_RESPONSE_RESULT_OK == response) {
-                final ArrayList<String> list = items.getStringArrayList(RESPONSE_ITEM_LIST);
-                return null != list && list.contains(mSku);
+                final ArrayList<String> purchases = items.getStringArrayList(RESPONSE_PURCHASE_DATA_LIST);
+                final ArrayList<String> signatures = items.getStringArrayList(RESPONSE_SIGNATURE_LIST);
+                if (purchases != null) {
+                    for (int i = 0; i < purchases.size(); i++) {
+                        final String json = purchases.get(i);
+                        final String signature = signatures != null ? signatures.get(i) : null;
+                        final Purchase purchase = new Purchase(json, signature);
+                        final String sku = purchase.getSku();
+                        if (sku != null && sku.equals(mSku)) {
+                            return verifyPurchaseSignature(purchase);
+                        }
+                    }
+                }
             }
         } catch (RemoteException ignore) {
         }
@@ -429,7 +463,25 @@ public class Premiumer {
         return !TextUtils.isEmpty(payload) && payload.equals(purchase.developerPayload);
     }
 
+    private boolean verifyPurchaseSignature(Purchase purchase) {
+        if (TextUtils.isEmpty(mLicenseKey))
+            return true;
+
+        try {
+            final String sku = purchase.getSku();
+            final String data = purchase.asJson();
+            final String signature = purchase.getSignature();
+
+            return Security.verifyPurchase(sku, mLicenseKey, data, signature);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     private void checkAds() {
+        if (mAsyncExecutor.isShutdown()) {
+            return;
+        }
         mAsyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
