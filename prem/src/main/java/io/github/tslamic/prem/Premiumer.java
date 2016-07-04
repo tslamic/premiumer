@@ -37,6 +37,7 @@ public class Premiumer {
         private Context mContext;
         private String mSku;
         private String mLicenseKey;
+        private int mRequestCode = 148;
 
         public Builder(Context context) {
             if (null == context) {
@@ -96,6 +97,14 @@ public class Premiumer {
         }
 
         /**
+         * Specify the request code.
+         **/
+        public Builder requestCode(int requestCode) {
+            mRequestCode = requestCode;
+            return this;
+        }
+
+        /**
          * Returns a new {@link Premiumer} instance.
          *
          * @throws IllegalStateException if sku has not been set.
@@ -113,7 +122,6 @@ public class Premiumer {
 
     }
 
-    private static final int PREMIUMER_ACTIVITY_RESULT_ID = 0xB00B5;
     private static final String PREMIUMER_PREFS = "__premiumer_prefs";
     private static final String PREMIUMER_PURCHASE_PAYLOAD = "premiumer_payload";
     private static final String PREMIUMER_PURCHASE_DATA = "premiumer_purchase_data";
@@ -140,6 +148,7 @@ public class Premiumer {
     private final Context mContext;
     private final String mSku;
     private String mLicenseKey;
+    private int mRequestCode;
 
     private ServiceConnection mServiceConnection;
     private boolean mIsBillingAvailable;
@@ -156,6 +165,7 @@ public class Premiumer {
         mHandler = new PremiumerHandler(builder.mListener);
         mSku = builder.mSku;
         mAutoNotifyAds = builder.mAutoNotifyAds;
+        mRequestCode = builder.mRequestCode;
     }
 
     /**
@@ -225,7 +235,7 @@ public class Premiumer {
                 mPreferences.edit().putString(PREMIUMER_PURCHASE_PAYLOAD, payload).commit();
                 final PendingIntent pendingIntent = bundle.getParcelable(RESPONSE_BUY_INTENT);
                 activity.startIntentSenderForResult(pendingIntent.getIntentSender(),
-                        PREMIUMER_ACTIVITY_RESULT_ID, new Intent(), 0, 0, 0);
+                        mRequestCode, new Intent(), 0, 0, 0);
                 return true;
             }
         } catch (RemoteException | IntentSender.SendIntentException ignore) {
@@ -259,7 +269,7 @@ public class Premiumer {
         }
 
         // Ignore handling if not related to Premiumer.
-        if (PREMIUMER_ACTIVITY_RESULT_ID != requestCode) {
+        if (mRequestCode != requestCode) {
             return false;
         }
 
