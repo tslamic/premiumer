@@ -8,74 +8,64 @@ import android.content.Intent;
  */
 public class SimplePremiumerListener implements PremiumerListener {
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onShowAds() {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onShowAds() {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onHideAds() {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onHideAds() {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onBillingUnavailable() {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onBillingUnavailable() {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onSkuDetails(SkuDetails details) {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onSkuDetails(SkuDetails details) {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onSkuConsumed() {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onSkuConsumed() {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onFailedToConsumeSku() {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onFailedToConsumeSku() {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onPurchaseSuccessful(Purchase purchase) {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onPurchaseSuccessful(Purchase purchase) {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onPurchaseBadResult(int result, Intent data) {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onPurchaseBadResult(int result, Intent data) {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onPurchaseBadResponse(Intent data) {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onPurchaseBadResponse(Intent data) {
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void onPurchaseInvalidPayload(Purchase purchase, String expected, String actual) {
-    }
-
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void onPurchaseInvalidPayload(Purchase purchase, String expected,
+      String actual) {
+  }
 }
