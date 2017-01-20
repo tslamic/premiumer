@@ -1,6 +1,9 @@
 package io.github.tslamic.prem;
 
 import android.content.Intent;
+import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 /**
  * Callback interface responding to {@link Premiumer} events. All methods are invoked
@@ -8,8 +11,7 @@ import android.content.Intent;
  *
  * @see SimplePremiumerListener
  */
-public interface PremiumerListener {
-
+@MainThread public interface PremiumerListener {
   /**
    * Invoked if the sku has not yet been purchased and ads should be visible.
    */
@@ -30,7 +32,7 @@ public interface PremiumerListener {
    *
    * @param details the {@link SkuDetails} class or {@code null}, if an error occurred.
    */
-  void onSkuDetails(SkuDetails details);
+  void onSkuDetails(@Nullable SkuDetails details);
 
   /**
    * Invoked when the sku has been successfully consumed.
@@ -47,7 +49,7 @@ public interface PremiumerListener {
    *
    * @param purchase the purchase data.
    */
-  void onPurchaseSuccessful(Purchase purchase);
+  void onPurchaseSuccessful(@NonNull Purchase purchase);
 
   /**
    * Invoked when the sku purchase is unsuccessful.
@@ -55,10 +57,10 @@ public interface PremiumerListener {
    * This happens if the Activity.onActivityResult resultCode is not equal to
    * Activity.RESULT_OK.
    *
-   * @param result the onActivityResult resultCode value.
+   * @param resultCode the onActivityResult resultCode value.
    * @param data the onActivityResult data.
    */
-  void onPurchaseBadResult(int result, Intent data);
+  void onPurchaseBadResult(int resultCode, @Nullable Intent data);
 
   /**
    * Invoked when the sku purchase is unsuccessful.
@@ -68,7 +70,7 @@ public interface PremiumerListener {
    *
    * @param data the onActivityResult data, which can be {@code null}.
    */
-  void onPurchaseBadResponse(Intent data);
+  void onPurchaseBadResponse(@Nullable Intent data);
 
   /**
    * Invoked when the sku purchase is successful, but the request payload differs from the
@@ -81,5 +83,6 @@ public interface PremiumerListener {
    * @param expected the expected token.
    * @param actual the actual token.
    */
-  void onPurchaseInvalidPayload(Purchase purchase, String expected, String actual);
+  void onPurchaseInvalidPayload(@NonNull Purchase purchase, @NonNull String expected,
+      @NonNull String actual);
 }
