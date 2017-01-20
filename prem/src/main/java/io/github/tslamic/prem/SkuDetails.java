@@ -1,48 +1,45 @@
 package io.github.tslamic.prem;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static io.github.tslamic.prem.Util.checkNotNull;
-
 /**
  * Represents an in-app product's listing details.
  */
-public class SkuDetails implements Parcelable {
-  private final String sku;
-  private final String type;
-  private final String price;
-  private final long priceAmount;
-  private final String currencyCode;
-  private final String title;
-  private final String description;
-  private final String json;
+public final class SkuDetails extends BillingItem {
+  String sku;
+  String type;
+  String price;
+  long priceAmount;
+  String currencyCode;
+  String title;
+  String description;
 
-  public SkuDetails(@NonNull String json) throws JSONException {
-    checkNotNull(json, "json == null");
-    final JSONObject obj = new JSONObject(json);
-    sku = obj.getString("productId");
-    type = obj.getString("type");
-    price = obj.getString("price");
-    priceAmount = obj.getLong("price_amount_micros");
-    currencyCode = obj.getString("price_currency_code");
-    title = obj.getString("title");
-    description = obj.getString("description");
-    this.json = json;
+  SkuDetails(@NonNull String json) throws JSONException {
+    super(json);
   }
 
-  public String getSku() {
+  @Override void init(@NonNull JSONObject object) throws JSONException {
+    sku = object.getString("productId");
+    type = object.getString("type");
+    price = object.getString("price");
+    priceAmount = object.getLong("price_amount_micros");
+    currencyCode = object.getString("price_currency_code");
+    title = object.getString("title");
+    description = object.getString("description");
+  }
+
+  @NonNull public String getSku() {
     return sku;
   }
 
-  public String getType() {
+  @NonNull public String getType() {
     return type;
   }
 
-  public String getPrice() {
+  @NonNull public String getPrice() {
     return price;
   }
 
@@ -50,20 +47,16 @@ public class SkuDetails implements Parcelable {
     return priceAmount;
   }
 
-  public String getCurrencyCode() {
+  @NonNull public String getCurrencyCode() {
     return currencyCode;
   }
 
-  public String getTitle() {
+  @NonNull public String getTitle() {
     return title;
   }
 
-  public String getDescription() {
+  @NonNull public String getDescription() {
     return description;
-  }
-
-  public String asJson() {
-    return json;
   }
 
   @Override public boolean equals(Object o) {
@@ -92,12 +85,28 @@ public class SkuDetails implements Parcelable {
   }
 
   @Override public String toString() {
-    return "SkuDetails: " + json;
+    return "SkuDetails{"
+        + "sku='"
+        + sku
+        + "', type='"
+        + type
+        + "', price='"
+        + price
+        + "', priceAmount='"
+        + priceAmount
+        + "', currencyCode='"
+        + currencyCode
+        + "', title='"
+        + title
+        + "', description='"
+        + description
+        + '}';
   }
 
   // Parcelable stuff below.
 
   private SkuDetails(@NonNull Parcel parcel) {
+    super(parcel);
     sku = parcel.readString();
     type = parcel.readString();
     price = parcel.readString();
@@ -105,7 +114,6 @@ public class SkuDetails implements Parcelable {
     currencyCode = parcel.readString();
     title = parcel.readString();
     description = parcel.readString();
-    json = parcel.readString();
   }
 
   public static final Creator<SkuDetails> CREATOR = new Creator<SkuDetails>() {
@@ -118,10 +126,6 @@ public class SkuDetails implements Parcelable {
     }
   };
 
-  @Override public int describeContents() {
-    return 0; // No special content.
-  }
-
   @Override public void writeToParcel(Parcel dest, int flags) {
     dest.writeString(sku);
     dest.writeString(type);
@@ -130,6 +134,5 @@ public class SkuDetails implements Parcelable {
     dest.writeString(currencyCode);
     dest.writeString(title);
     dest.writeString(description);
-    dest.writeString(json);
   }
 }
