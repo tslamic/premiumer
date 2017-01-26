@@ -60,9 +60,12 @@ public final class SkuDetails extends BillingItem {
   }
 
   @Override public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     final SkuDetails details = (SkuDetails) o;
     return priceAmount == details.priceAmount
         && sku.equals(details.sku)
@@ -82,25 +85,6 @@ public final class SkuDetails extends BillingItem {
     result = 31 * result + title.hashCode();
     result = 31 * result + description.hashCode();
     return result;
-  }
-
-  @Override public String toString() {
-    return "SkuDetails{"
-        + "sku='"
-        + sku
-        + "', type='"
-        + type
-        + "', price='"
-        + price
-        + "', priceAmount='"
-        + priceAmount
-        + "', currencyCode='"
-        + currencyCode
-        + "', title='"
-        + title
-        + "', description='"
-        + description
-        + '}';
   }
 
   // Parcelable stuff below.
@@ -127,6 +111,7 @@ public final class SkuDetails extends BillingItem {
   };
 
   @Override public void writeToParcel(Parcel dest, int flags) {
+    super.writeToParcel(dest, flags);
     dest.writeString(sku);
     dest.writeString(type);
     dest.writeString(price);

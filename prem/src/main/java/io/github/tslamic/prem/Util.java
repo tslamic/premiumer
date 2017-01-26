@@ -1,11 +1,14 @@
 package io.github.tslamic.prem;
 
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
 
 final class Util {
-  private Util() { throw new AssertionError(); }
+  private Util() {
+    throw new AssertionError();
+  }
 
   static <T> T checkNotNull(@Nullable T obj, @NonNull String message) {
     if (obj == null) {
@@ -14,11 +17,18 @@ final class Util {
     return obj;
   }
 
+  static boolean isBlank(@Nullable CharSequence string) {
+    return string == null || string.toString().trim().length() == 0;
+  }
+
   static boolean safeEquals(@Nullable Object fst, @Nullable Object snd) {
     return fst == snd || fst != null && fst.equals(snd);
   }
 
-  static boolean checkMainThread() {
-    return Looper.getMainLooper().getThread() == Thread.currentThread();
+  @SafeVarargs static <T> ArrayList<T> arrayList(@NonNull T... items) {
+    checkNotNull(items, "items == null");
+    final ArrayList<T> list = new ArrayList<>(items.length);
+    Collections.addAll(list, items);
+    return list;
   }
 }

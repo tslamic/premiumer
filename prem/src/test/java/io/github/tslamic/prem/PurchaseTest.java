@@ -6,19 +6,13 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.github.tslamic.prem.AssertUtil.assertEq;
+import static io.github.tslamic.prem.TestUtil.JSON_PURCHASE;
+import static io.github.tslamic.prem.TestUtil.fromParcel;
 
 @RunWith(RobolectricTestRunner.class) public class PurchaseTest {
-  private static final String JSON = "{"
-      + "  \"orderId\":\"testOrder\","
-      + "  \"packageName\":\"com.example.app\","
-      + "  \"productId\":\"exampleSku\","
-      + "  \"purchaseTime\":1345678900000,"
-      + "  \"purchaseState\":0,"
-      + "  \"developerPayload\":\"testPayload\","
-      + "  \"purchaseToken\":\"testToken\""
-      + "}";
-
-  @Test(expected = NullPointerException.class) public void withNull() throws Exception {
+  @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
+  public void withNull() throws Exception {
     new Purchase(null, null);
   }
 
@@ -35,26 +29,40 @@ import static com.google.common.truth.Truth.assertThat;
   }
 
   @Test public void withProperJson() throws Exception {
-    final Purchase purchase = new Purchase(JSON, null);
+    final String signature = null;
+    final Purchase purchase = new Purchase(JSON_PURCHASE, signature);
 
-    assertThat(purchase.orderId).isEqualTo("testOrder");
-    assertThat(purchase.packageName).isEqualTo("com.example.app");
-    assertThat(purchase.sku).isEqualTo("exampleSku");
-    assertThat(purchase.purchaseTime).isEqualTo(1345678900000L);
-    assertThat(purchase.purchaseState).isEqualTo(0);
+    assertThat(purchase.isAutoRenewing()).isFalse();
+    assertThat(purchase.getOrderId()).isEqualTo("TestOrder");
+    assertThat(purchase.getPackageName()).isEqualTo("com.example.app");
+    assertThat(purchase.getSku()).isEqualTo("TestProductId");
+    assertThat(purchase.getPurchaseTime()).isEqualTo(1345678900000L);
+    assertThat(purchase.getPurchaseState()).isEqualTo(0);
     assertThat(purchase.isPurchased()).isTrue();
     assertThat(purchase.isCancelled()).isFalse();
     assertThat(purchase.isRefunded()).isFalse();
-    assertThat(purchase.developerPayload).isEqualTo("testPayload");
-    assertThat(purchase.purchaseToken).isEqualTo("testToken");
+    assertThat(purchase.getDeveloperPayload()).isEqualTo("TestDeveloperPayload");
+    assertThat(purchase.getToken()).isEqualTo("TestPurchaseToken");
+    assertThat(purchase.getSignature()).isEqualTo(signature);
+    assertThat(purchase.asJson()).isEqualTo(JSON_PURCHASE);
+  }
 
-    final Purchase p = new Purchase(JSON, null);
-    assertThat(purchase).isEqualTo(p);
+  @Test public void eq() throws Exception {
+    final Purchase p = new Purchase(JSON_PURCHASE, "signature");
+    final Purchase q = new Purchase(JSON_PURCHASE, "signature");
+    assertEq(p, q);
+  }
+
+  @Test public void eqFromJson() throws Exception {
+    final Purchase p = new Purchase(JSON_PURCHASE, "signature");
+    final Purchase q = new Purchase(p.asJson(), "signature");
+    assertEq(p, q);
   }
 
   @Test public void parcelable() throws Exception {
-    final Purchase purchase = new Purchase(JSON, null);
-    final Purchase fromParcel = TestUtil.fromParcel(purchase, Purchase.CREATOR);
-    assertThat(purchase).isEqualTo(fromParcel);
+    final Purchase p = new Purchase(JSON_PURCHASE, null);
+    final Purchase q = fromParcel(p, Purchase.CREATOR);
+    assertThat(p.asJson()).isEqualTo(q.asJson());
+    assertEq(p, q);
   }
 }

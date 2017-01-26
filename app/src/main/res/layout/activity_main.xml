@@ -2,49 +2,65 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    >
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onPurchase"
-        android:text="purchase"
-        android:textAllCaps="true" />
+  <Button
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:onClick="onPurchase"
+      android:text="purchase"
+      android:textAllCaps="true"
+      />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onConsume"
-        android:text="consume"
-        android:textAllCaps="true" />
+  <Button
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:onClick="onConsume"
+      android:text="consume"
+      android:textAllCaps="true"
+      />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onSkuDetails"
-        android:text="sku details"
-        android:textAllCaps="true" />
+  <Button
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:onClick="onSkuDetails"
+      android:text="sku details"
+      android:textAllCaps="true"
+      />
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onPurchaseInfo"
-        android:text="purchase info"
-        android:textAllCaps="true" />
+  <Button
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:onClick="onPurchaseDetails"
+      android:text="purchase info"
+      android:textAllCaps="true"
+      />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+  <TextView
+      android:id="@+id/status"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center"
+      android:padding="16dp"
+      android:textSize="18sp"
+      />
 
-    <TextView
-        android:id="@+id/ads"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#ffaa66cc"
-        android:gravity="center"
-        android:text="ads"
-        android:textColor="#fff"
-        android:textSize="20sp" />
+  <View
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      />
+
+  <TextView
+      android:id="@+id/ads"
+      android:layout_width="match_parent"
+      android:layout_height="56dp"
+      android:background="#ffaa66cc"
+      android:gravity="center"
+      android:text="ads"
+      android:textColor="#fff"
+      android:textSize="20sp"
+      />
 
 </LinearLayout>

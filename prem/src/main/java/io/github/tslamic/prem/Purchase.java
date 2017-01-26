@@ -16,7 +16,7 @@ public class Purchase extends BillingItem {
   private static final int STATE_CANCELLED = 1;
   private static final int STATE_REFUNDED = 2;
 
-  boolean autoRenewing;
+  boolean autoRenewing; // Even though this will never be used, it's here for completeness.
   String orderId;
   String packageName;
   String sku;
@@ -42,7 +42,9 @@ public class Purchase extends BillingItem {
     purchaseToken = object.getString("purchaseToken");
   }
 
-  public boolean isAutoRenewing() { return autoRenewing; }
+  public boolean isAutoRenewing() {
+    return autoRenewing;
+  }
 
   @NonNull public String getOrderId() {
     return orderId;
@@ -89,9 +91,12 @@ public class Purchase extends BillingItem {
   }
 
   @Override public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     final Purchase purchase = (Purchase) o;
     return autoRenewing == purchase.autoRenewing
         && purchaseTime == purchase.purchaseTime
@@ -113,7 +118,7 @@ public class Purchase extends BillingItem {
     result = 31 * result + purchaseState;
     result = 31 * result + developerPayload.hashCode();
     result = 31 * result + purchaseToken.hashCode();
-    result = 31 * result + signature.hashCode();
+    result = 31 * result + (signature == null ? 0 : signature.hashCode());
     return result;
   }
 
@@ -143,6 +148,7 @@ public class Purchase extends BillingItem {
   };
 
   @Override public void writeToParcel(Parcel dest, int flags) {
+    super.writeToParcel(dest, flags);
     dest.writeInt(autoRenewing ? 1 : 0);
     dest.writeString(orderId);
     dest.writeString(packageName);

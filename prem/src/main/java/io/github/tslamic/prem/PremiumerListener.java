@@ -6,21 +6,28 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * Callback interface responding to {@link Premiumer} events. All methods are invoked
- * on the main thread.
+ * Callback interface responding to {@link Premiumer} events. If you need to override only a
+ * handful of methods, use {@link SimplePremiumerListener}.
+ *
+ * All listener methods will be invoked on the main thread.
  *
  * @see SimplePremiumerListener
  */
 @MainThread public interface PremiumerListener {
   /**
-   * Invoked if the sku has not yet been purchased and ads should be visible.
+   * Invoked if ads should be visible.
    */
   void onShowAds();
 
   /**
-   * Invoked if the sku has been purchased and ads should not be visible.
+   * Invoked if ads should be hidden.
    */
   void onHideAds();
+
+  /**
+   * Invoked if In-app Billing is available.
+   */
+  void onBillingAvailable();
 
   /**
    * Invoked if In-app Billing is unavailable.
@@ -28,24 +35,39 @@ import android.support.annotation.Nullable;
   void onBillingUnavailable();
 
   /**
-   * Invoked when {@link SkuDetails} information is ready.
+   * Invoked when {@link SkuDetails} information is retrieved.
    *
-   * @param details the {@link SkuDetails} class or {@code null}, if an error occurred.
+   * @param details {@link SkuDetails} instance or {@code null}, if an error occurred.
    */
   void onSkuDetails(@Nullable SkuDetails details);
 
   /**
-   * Invoked when the sku has been successfully consumed.
+   * Invoked if the sku has been successfully consumed.
    */
   void onSkuConsumed();
 
   /**
-   * Invoked when the sku has not been successfully consumed.
+   * Invoked if the sku has not been successfully consumed.
    */
   void onFailedToConsumeSku();
 
   /**
-   * Invoked on a successful sku purchase.
+   * Invoked on a purchase request.
+   *
+   * @param payload a developer-specified {@link String} containing supplemental information about
+   * a purchase.
+   */
+  void onPurchaseRequested(@Nullable String payload);
+
+  /**
+   * Invoked when purchase details are retrieved.
+   *
+   * @param purchase {@link Purchase} instance or {@code null}, if unavailable.
+   */
+  void onPurchaseDetails(@Nullable Purchase purchase);
+
+  /**
+   * Invoked on a successful purchase.
    *
    * @param purchase the purchase data.
    */
@@ -53,7 +75,6 @@ import android.support.annotation.Nullable;
 
   /**
    * Invoked when the sku purchase is unsuccessful.
-   *
    * This happens if the Activity.onActivityResult resultCode is not equal to
    * Activity.RESULT_OK.
    *
@@ -64,25 +85,19 @@ import android.support.annotation.Nullable;
 
   /**
    * Invoked when the sku purchase is unsuccessful.
-   *
-   * This happens if either onActivityResult data is null, or the billing response is
-   * not BILLING_RESPONSE_RESULT_OK.
+   * This happens if either onActivityResult data is null, or the billing response is invalid.
    *
    * @param data the onActivityResult data, which can be {@code null}.
    */
   void onPurchaseBadResponse(@Nullable Intent data);
 
   /**
-   * Invoked when the sku purchase is successful, but the request payload differs from the
-   * purchase payload.
-   *
-   * Note that even if {@link io.github.tslamic.prem.Premiumer.Builder#autoNotifyAds(boolean)} is
-   * {@code true}, {@link #onHideAds()} will NOT be invoked.
-   *
-   * @param purchase the Purchase data.
-   * @param expected the expected token.
-   * @param actual the actual token.
+   * Invoked if a purchase has failed verification.
    */
-  void onPurchaseInvalidPayload(@NonNull Purchase purchase, @NonNull String expected,
-      @NonNull String actual);
+  void onPurchaseFailedVerification();
+
+  /**
+   * Invoked when an {@link Exception} occurs.
+   */
+  void onException(@NonNull Exception exception);
 }
