@@ -23,6 +23,9 @@ public final class PremiumerBuilder
   PurchaseCache purchaseCache;
   String signatureBase64;
 
+  /**
+   * Creates a new builder starting point.
+   */
   @NonNull public static SkuProvider with(@NonNull Context context) {
     return new PremiumerBuilder(context);
   }

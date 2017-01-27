@@ -1,4 +1,4 @@
-package io.github.tslamic.prem;
+package io.github.tslamic.prem.stub;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.UserHandle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.Display;
 import java.io.File;
@@ -246,7 +247,7 @@ public class ContextStub extends Context {
 
   }
 
-  @Override public void sendOrderedBroadcast(Intent intent, String receiverPermission,
+  @Override public void sendOrderedBroadcast(@NonNull Intent intent, String receiverPermission,
       BroadcastReceiver resultReceiver, Handler scheduler, int initialCode, String initialData,
       Bundle initialExtras) {
 
@@ -318,44 +319,46 @@ public class ContextStub extends Context {
     return false;
   }
 
-  @Override public boolean bindService(Intent service, ServiceConnection conn, int flags) {
+  @Override public boolean bindService(Intent service, @NonNull ServiceConnection conn, int flags) {
     return false;
   }
 
-  @Override public void unbindService(ServiceConnection conn) {
+  @Override public void unbindService(@NonNull ServiceConnection conn) {
 
   }
 
-  @Override public boolean startInstrumentation(ComponentName className, String profileFile,
+  @Override
+  public boolean startInstrumentation(@NonNull ComponentName className, String profileFile,
       Bundle arguments) {
     return false;
   }
 
-  @Override public Object getSystemService(String name) {
+  @Override public Object getSystemService(@NonNull String name) {
     return null;
   }
 
-  @Override public int checkPermission(String permission, int pid, int uid) {
+  @Override public int checkPermission(@NonNull String permission, int pid, int uid) {
     return 0;
   }
 
-  @Override public int checkCallingPermission(String permission) {
+  @Override public int checkCallingPermission(@NonNull String permission) {
     return 0;
   }
 
-  @Override public int checkCallingOrSelfPermission(String permission) {
+  @Override public int checkCallingOrSelfPermission(@NonNull String permission) {
     return 0;
   }
 
-  @Override public void enforcePermission(String permission, int pid, int uid, String message) {
+  @Override
+  public void enforcePermission(@NonNull String permission, int pid, int uid, String message) {
 
   }
 
-  @Override public void enforceCallingPermission(String permission, String message) {
+  @Override public void enforceCallingPermission(@NonNull String permission, String message) {
 
   }
 
-  @Override public void enforceCallingOrSelfPermission(String permission, String message) {
+  @Override public void enforceCallingOrSelfPermission(@NonNull String permission, String message) {
 
   }
 
@@ -409,11 +412,44 @@ public class ContextStub extends Context {
     return null;
   }
 
-  @Override public Context createConfigurationContext(Configuration overrideConfiguration) {
+  @Override
+  public Context createConfigurationContext(@NonNull Configuration overrideConfiguration) {
     return null;
   }
 
-  @Override public Context createDisplayContext(Display display) {
+  @Override public Context createDisplayContext(@NonNull Display display) {
     return null;
+  }
+
+  @Override public boolean moveSharedPreferencesFrom(Context sourceContext, String name) {
+    return false;
+  }
+
+  @Override public boolean deleteSharedPreferences(String name) {
+    return false;
+  }
+
+  @Override public File getDataDir() {
+    return null;
+  }
+
+  @Override public boolean moveDatabaseFrom(Context sourceContext, String name) {
+    return false;
+  }
+
+  @Override public String getSystemServiceName(Class<?> serviceClass) {
+    return null;
+  }
+
+  @Override public int checkSelfPermission(String permission) {
+    return 0;
+  }
+
+  @Override public Context createDeviceProtectedStorageContext() {
+    return null;
+  }
+
+  @Override public boolean isDeviceProtectedStorage() {
+    return false;
   }
 }

@@ -1,11 +1,11 @@
-package io.github.tslamic.prem;
+package io.github.tslamic.prem.stub;
 
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import com.android.vending.billing.IInAppBillingService;
 
-class BillingServiceStub implements IInAppBillingService {
+public class BillingServiceStub implements IInAppBillingService {
   @Override public int isBillingSupported(int apiVersion, String packageName, String type)
       throws RemoteException {
     return 0;

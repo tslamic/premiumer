@@ -1,4 +1,4 @@
-package io.github.tslamic.prem;
+package io.github.tslamic.prem.stub;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -337,8 +337,8 @@ public class PackageManagerStub extends PackageManager {
 
   }
 
-  @Override public int getPreferredActivities(List<IntentFilter> outFilters,
-      List<ComponentName> outActivities, String packageName) {
+  @Override public int getPreferredActivities(@NonNull List<IntentFilter> outFilters,
+      @NonNull List<ComponentName> outActivities, String packageName) {
     return 0;
   }
 
@@ -365,5 +365,22 @@ public class PackageManagerStub extends PackageManager {
 
   @NonNull @Override public PackageInstaller getPackageInstaller() {
     return null;
+  }
+
+  @Override public int[] getPackageGids(String packageName, int flags)
+      throws NameNotFoundException {
+    return new int[0];
+  }
+
+  @Override public int getPackageUid(String packageName, int flags) throws NameNotFoundException {
+    return 0;
+  }
+
+  @Override public boolean isPermissionRevokedByPolicy(String permName, String pkgName) {
+    return false;
+  }
+
+  @Override public boolean hasSystemFeature(String name, int version) {
+    return false;
   }
 }

@@ -6,10 +6,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * Callback interface responding to {@link Premiumer} events. If you need to override only a
- * handful of methods, use {@link SimplePremiumerListener}.
- *
- * All listener methods will be invoked on the main thread.
+ * Callback interface responding to {@link Premiumer} events. All listener methods will be invoked
+ * on the main thread.
+ * If you need to override only a handful of methods, use {@link SimplePremiumerListener}.
  *
  * @see SimplePremiumerListener
  */
@@ -25,12 +24,12 @@ import android.support.annotation.Nullable;
   void onHideAds();
 
   /**
-   * Invoked if In-app Billing is available.
+   * Invoked if in-app Billing is available.
    */
   void onBillingAvailable();
 
   /**
-   * Invoked if In-app Billing is unavailable.
+   * Invoked if in-app Billing is unavailable.
    */
   void onBillingUnavailable();
 
@@ -42,12 +41,12 @@ import android.support.annotation.Nullable;
   void onSkuDetails(@Nullable SkuDetails details);
 
   /**
-   * Invoked if the sku has been successfully consumed.
+   * Invoked if sku has been successfully consumed.
    */
   void onSkuConsumed();
 
   /**
-   * Invoked if the sku has not been successfully consumed.
+   * Invoked if sku has not been successfully consumed.
    */
   void onFailedToConsumeSku();
 
@@ -95,9 +94,4 @@ import android.support.annotation.Nullable;
    * Invoked if a purchase has failed verification.
    */
   void onPurchaseFailedVerification();
-
-  /**
-   * Invoked when an {@link Exception} occurs.
-   */
-  void onException(@NonNull Exception exception);
 }

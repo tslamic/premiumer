@@ -63,10 +63,6 @@ class LogPremiumerListener implements PremiumerListener {
     log("onPurchaseFailedVerification()");
   }
 
-  @Override public void onException(@NonNull Exception exception) {
-    log("onException(), exception=%s", exception);
-  }
-
   private void log(String format, Object... args) {
     Log.d(TAG, String.format(format, args));
   }

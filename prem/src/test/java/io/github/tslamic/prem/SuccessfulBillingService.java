@@ -16,17 +16,7 @@ import static io.github.tslamic.prem.TestUtil.SKU;
 import static io.github.tslamic.prem.Util.arrayList;
 import static org.mockito.Mockito.mock;
 
-class SuccessBillingService implements IInAppBillingService {
-  private final boolean developerPayloadRequired;
-
-  SuccessBillingService() {
-    this(false);
-  }
-
-  SuccessBillingService(boolean developerPayloadRequired) {
-    this.developerPayloadRequired = developerPayloadRequired;
-  }
-
+class SuccessfulBillingService implements IInAppBillingService {
   @Override public int isBillingSupported(int apiVersion, String packageName, String type)
       throws RemoteException {
     return BILLING_RESPONSE_RESULT_OK;
@@ -42,9 +32,6 @@ class SuccessBillingService implements IInAppBillingService {
 
   @Override public Bundle getBuyIntent(int apiVersion, String packageName, String sku, String type,
       String developerPayload) throws RemoteException {
-    if (developerPayloadRequired && developerPayload == null) {
-      throw new AssertionError();
-    }
     final Bundle bundle = responseOkBundle();
     bundle.putParcelable(RESPONSE_BUY_INTENT, mock(PendingIntent.class));
     return bundle;

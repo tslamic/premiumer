@@ -1,5 +1,6 @@
 package io.github.tslamic.prem;
 
+import android.content.Context;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,11 +11,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static io.github.tslamic.prem.AssertUtil.assertEq;
 import static io.github.tslamic.prem.TestUtil.JSON_PURCHASE;
 
-@RunWith(RobolectricTestRunner.class) public class SharedPrefsCacheTest {
-  private PurchaseCache.SharedPrefsCache cache;
+@RunWith(RobolectricTestRunner.class) public class CacheTest {
+  private PurchaseCache cache;
 
-  @Before public void setUp() throws Exception {
-    cache = new PurchaseCache.SharedPrefsCache(RuntimeEnvironment.application);
+  @Before public void setUp() {
+    final Context context = RuntimeEnvironment.application;
+    cache = TestFactory.cache(context);
   }
 
   @Test public void checkAll() throws Exception {

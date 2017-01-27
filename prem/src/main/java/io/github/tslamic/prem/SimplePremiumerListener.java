@@ -74,9 +74,4 @@ import android.support.annotation.Nullable;
    * {@inheritDoc}
    */
   @Override public void onPurchaseFailedVerification() { }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override public void onException(@NonNull Exception exception) { }
 }

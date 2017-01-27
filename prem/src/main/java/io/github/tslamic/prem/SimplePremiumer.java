@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.support.annotation.WorkerThread;
 import com.android.vending.billing.IInAppBillingService;
 import java.util.concurrent.Executor;
@@ -80,7 +81,11 @@ class SimplePremiumer implements Premiumer {
       return false;
     }
     final String payload = payloadGenerator.generate();
-    return billing.purchase(activity, sku, requestCode, payload);
+    if (billing.purchase(activity, sku, requestCode, payload)) {
+      listener.onPurchaseRequested(payload);
+      return true;
+    }
+    return false;
   }
 
   @Override
@@ -112,19 +117,18 @@ class SimplePremiumer implements Premiumer {
 
     // Ensure the important stuff is present, otherwise this is a bad response.
     final String purchaseData = data.getStringExtra(RESPONSE_PURCHASE_DATA);
-    final String signature = data.getStringExtra(RESPONSE_SIGNATURE);
     if (isBlank(purchaseData)) {
       listener.onPurchaseBadResponse(data);
       return true;
     }
 
     // Success!
+    final String signature = data.getStringExtra(RESPONSE_SIGNATURE);
     executor.execute(new Runnable() {
       @Override public void run() {
         onSuccessfulPurchase(purchaseData, signature);
       }
     });
-
     return true;
   }
 
@@ -156,8 +160,8 @@ class SimplePremiumer implements Premiumer {
         }
         final int message;
         if (consumed) {
-          message = PremiumerHandler.ON_SKU_CONSUMED;
           cache.clear();
+          message = PremiumerHandler.ON_SKU_CONSUMED;
         } else {
           message = PremiumerHandler.ON_FAILED_TO_CONSUME_SKU;
         }
@@ -178,7 +182,7 @@ class SimplePremiumer implements Premiumer {
     }
   }
 
-  boolean checkAds() {
+  @VisibleForTesting boolean checkAds() {
     return exec(new Runnable() {
       @Override public void run() {
         final boolean owns = billing.ownsSku(sku);
@@ -188,7 +192,7 @@ class SimplePremiumer implements Premiumer {
     });
   }
 
-  boolean exec(@NonNull Runnable runnable) {
+  private boolean exec(@NonNull Runnable runnable) {
     if (billing == null) {
       return false;
     }
@@ -196,7 +200,7 @@ class SimplePremiumer implements Premiumer {
     return true;
   }
 
-  static Purchase fromJson(@NonNull String json, @Nullable String signature) {
+  private static Purchase fromJson(@NonNull String json, @Nullable String signature) {
     try {
       return new Purchase(json, signature);
     } catch (JSONException e) {

@@ -38,7 +38,7 @@ class SimpleBinder implements Binder {
   @Override
   public boolean bind(@NonNull Intent intent, @NonNull ServiceConnection conn, int flags) {
     if (isBound()) {
-      throw new AssertionError();
+      throw new IllegalStateException();
     }
     if (context.bindService(intent, conn, flags)) {
       connection = conn;

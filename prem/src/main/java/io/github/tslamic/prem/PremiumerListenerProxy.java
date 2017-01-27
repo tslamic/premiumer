@@ -62,8 +62,4 @@ class PremiumerListenerProxy implements PremiumerListener {
   @Override public void onPurchaseFailedVerification() {
     listener.onPurchaseFailedVerification();
   }
-
-  @Override public void onException(@NonNull Exception exception) {
-    listener.onException(exception);
-  }
 }

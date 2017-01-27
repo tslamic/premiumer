@@ -16,6 +16,7 @@ import org.robolectric.RuntimeEnvironment;
 import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 import static com.google.common.truth.Truth.assertThat;
+import static io.github.tslamic.prem.AssertUtil.assertInvokedOnce;
 import static io.github.tslamic.prem.Constant.BILLING_RESPONSE_RESULT_OK;
 import static io.github.tslamic.prem.Constant.RESPONSE_CODE;
 import static io.github.tslamic.prem.Constant.RESPONSE_PURCHASE_DATA;
@@ -25,11 +26,9 @@ import static io.github.tslamic.prem.TestUtil.JSON_PURCHASE;
 import static io.github.tslamic.prem.TestUtil.JSON_SKU;
 import static io.github.tslamic.prem.TestUtil.SKU;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(RobolectricTestRunner.class) public class SimplePremiumerTest {
+@RunWith(RobolectricTestRunner.class) public class PremiumerTest {
   private static final String SIGNATURE = "signature";
   private static final int REQUEST_CODE = 123;
 
@@ -40,12 +39,11 @@ import static org.mockito.Mockito.when;
   private Binder binder;
   private Premiumer premiumer;
 
-  @Before public void setUp() throws Exception {
+  @Before public void setUp() {
     verifier = mock(PurchaseVerifier.class);
     cache = mock(PurchaseCache.class);
     generator = mock(PayloadGenerator.class);
     listener = mock(PremiumerListener.class);
-    binder = new BinderMock();
 
     final Builder builder = PremiumerBuilder.with(RuntimeEnvironment.application)
         .sku(SKU)
@@ -58,10 +56,11 @@ import static org.mockito.Mockito.when;
         .requestCode(REQUEST_CODE)
         .signatureBase64(SIGNATURE);
 
-    premiumer = new SimplePremiumer((PremiumerBuilder) builder, binder);
+    binder = new BinderMock();
+    premiumer = TestFactory.premiumer(builder, binder);
   }
 
-  @Test public void bindUnbind() throws Exception {
+  @Test public void bindUnbind() {
     premiumer.bind();
     assertBound(true);
 
@@ -69,13 +68,15 @@ import static org.mockito.Mockito.when;
     assertBound(false);
   }
 
-  @Test public void purchaseNotBound() throws Exception {
+  @Test public void purchaseNotBound() {
+    assertThat(binder.isBound()).isFalse();
+
     final Activity activity = mock(Activity.class);
     final boolean purchased = premiumer.purchase(activity);
     assertThat(purchased).isFalse();
   }
 
-  @Test public void purchaseActivityNull() throws Exception {
+  @Test public void purchaseActivityNull() {
     premiumer.bind();
     assertBound(true);
 
@@ -83,83 +84,101 @@ import static org.mockito.Mockito.when;
     assertThat(purchased).isFalse();
   }
 
-  @Test public void purchaseOk() throws Exception {
+  @Test public void purchaseOk() {
     premiumer.bind();
+    assertBound(true);
+
+    final String payload = "payload";
+    when(generator.generate()).thenReturn(payload);
+
     final Activity activity = mock(Activity.class);
     final boolean purchased = premiumer.purchase(activity);
     assertThat(purchased).isTrue();
-    verify(generator, times(1)).generate();
+    assertInvokedOnce(generator).generate();
+    assertInvokedOnce(listener).onPurchaseRequested(payload);
   }
 
-  @Test public void handleActivityResultBadRequestCode() throws Exception {
-    final int badRequestCode = REQUEST_CODE - 1;
+  @Test public void handleActivityResultBadRequestCode() {
+    final int badRequestCode = BILLING_RESPONSE_RESULT_OK - 1;
     final boolean handled = premiumer.handleActivityResult(badRequestCode, RESULT_OK, new Intent());
     assertThat(handled).isFalse();
   }
 
-  @Test public void handleActivityResultBadResult() throws Exception {
+  @Test public void handleActivityResultBadResult() {
     final int result = RESULT_CANCELED;
     final Intent intent = new Intent();
     final boolean handled = premiumer.handleActivityResult(REQUEST_CODE, result, intent);
     assertThat(handled).isTrue();
-    verify(listener, times(1)).onPurchaseBadResult(result, intent);
+    assertInvokedOnce(listener).onPurchaseBadResult(result, intent);
   }
 
-  @Test public void handleActivityResultBadResponseNull() throws Exception {
+  @Test public void handleActivityResultBadResponseNull() {
     final boolean handled = premiumer.handleActivityResult(REQUEST_CODE, RESULT_OK, null);
     assertThat(handled).isTrue();
-    verify(listener, times(1)).onPurchaseBadResponse(null);
+    assertInvokedOnce(listener).onPurchaseBadResponse(null);
   }
 
-  @Test public void handleActivityResultBadResponse() throws Exception {
+  @Test public void handleActivityResultBadResponse() {
     final int badResponseCode = BILLING_RESPONSE_RESULT_OK - 1;
     final Intent intent = newBillingIntent(badResponseCode, null, null);
     final boolean handled = premiumer.handleActivityResult(REQUEST_CODE, RESULT_OK, intent);
     assertThat(handled).isTrue();
-    verify(listener, times(1)).onPurchaseBadResponse(intent);
+    assertInvokedOnce(listener).onPurchaseBadResponse(intent);
   }
 
-  @Test public void handleActivityResultBadData() throws Exception {
-    final Intent intent = newBillingIntent(BILLING_RESPONSE_RESULT_OK, "", null);
+  private void handleActivityResultBadData(@Nullable String data) {
+    final Intent intent = newBillingIntent(BILLING_RESPONSE_RESULT_OK, data, null);
     final boolean handled = premiumer.handleActivityResult(REQUEST_CODE, RESULT_OK, intent);
     assertThat(handled).isTrue();
-    verify(listener, times(1)).onPurchaseBadResponse(intent);
+    assertInvokedOnce(listener).onPurchaseBadResponse(intent);
+  }
+
+  @Test public void handleActivityResultBadDataNull() {
+    handleActivityResultBadData(null);
+  }
+
+  @Test public void handleActivityResultBadDataEmpty() {
+    handleActivityResultBadData("");
+  }
+
+  private void handleActivityVerification(boolean verified) throws Exception {
+    final String responseData = JSON_PURCHASE;
+    final String responseSignature = "responseSignature";
+
+    when(verifier.verify(SIGNATURE, responseData, responseSignature)).thenReturn(verified);
+
+    final Intent intent =
+        newBillingIntent(BILLING_RESPONSE_RESULT_OK, responseData, responseSignature);
+    final boolean handled = premiumer.handleActivityResult(REQUEST_CODE, RESULT_OK, intent);
+    assertThat(handled).isTrue();
+    assertInvokedOnce(verifier).verify(SIGNATURE, responseData, responseSignature);
+
+    if (verified) {
+      final Purchase purchase = new Purchase(responseData, responseSignature);
+      assertInvokedOnce(cache).cache(purchase);
+      assertInvokedOnce(listener).onPurchaseSuccessful(purchase);
+    } else {
+      assertInvokedOnce(listener).onPurchaseFailedVerification();
+    }
   }
 
   @Test public void handleActivityVerificationFailed() throws Exception {
-    final String json = JSON_PURCHASE;
-    final String billingSignature = "billing";
-
-    final Intent intent = newBillingIntent(BILLING_RESPONSE_RESULT_OK, json, billingSignature);
-    final boolean handled = premiumer.handleActivityResult(REQUEST_CODE, RESULT_OK, intent);
-    assertThat(handled).isTrue();
-    verify(verifier, times(1)).verify(SIGNATURE, json, billingSignature);
-    verify(listener, times(1)).onPurchaseFailedVerification();
+    handleActivityVerification(false);
   }
 
   @Test public void handleActivityResultVerificationOk() throws Exception {
-    final String json = JSON_PURCHASE;
-    final String billingSignature = "billing";
-
-    when(verifier.verify(SIGNATURE, json, billingSignature)).thenReturn(true);
-
-    final Intent intent = newBillingIntent(BILLING_RESPONSE_RESULT_OK, json, billingSignature);
-    final boolean handled = premiumer.handleActivityResult(REQUEST_CODE, RESULT_OK, intent);
-    assertThat(handled).isTrue();
-    verify(verifier, times(1)).verify(SIGNATURE, json, billingSignature);
-
-    final Purchase purchase = new Purchase(json, billingSignature);
-    verify(cache, times(1)).cache(purchase);
-    verify(listener, times(1)).onPurchaseSuccessful(purchase);
+    handleActivityVerification(true);
   }
 
   @Test public void skuDetails() throws Exception {
     premiumer.bind();
+    assertBound(true);
+
     final boolean enqueued = premiumer.skuDetails();
     assertThat(enqueued).isTrue();
 
     final SkuDetails details = new SkuDetails(JSON_SKU);
-    verify(listener, times(1)).onSkuDetails(details);
+    assertInvokedOnce(listener).onSkuDetails(details);
   }
 
   @Test public void purchaseDetails() throws Exception {
@@ -167,36 +186,57 @@ import static org.mockito.Mockito.when;
     when(cache.load()).thenReturn(purchase);
 
     premiumer.bind();
+    assertBound(true);
+
     final boolean enqueued = premiumer.purchaseDetails();
     assertThat(enqueued).isTrue();
-    verify(listener, times(1)).onPurchaseDetails(purchase);
+    assertInvokedOnce(listener).onPurchaseDetails(purchase);
+  }
+
+  private void consumeSku(@Nullable Purchase cached) {
+    premiumer.bind();
+    assertBound(true);
+
+    when(cache.load()).thenReturn(cached);
+
+    final boolean consumed = premiumer.consumeSku();
+    assertThat(consumed).isTrue();
+    assertInvokedOnce(cache).load();
+
+    if (cached == null) {
+      assertInvokedOnce(listener).onFailedToConsumeSku();
+    } else {
+      assertInvokedOnce(listener).onSkuConsumed();
+    }
   }
 
   @Test public void consumeSkuFailed() throws Exception {
-    premiumer.bind();
-    final boolean consumed = premiumer.consumeSku();
-    assertThat(consumed).isTrue();
-    verify(listener, times(1)).onFailedToConsumeSku();
+    consumeSku(null);
   }
 
   @Test public void consumeSkuOk() throws Exception {
     final Purchase purchase = new Purchase(JSON_PURCHASE, null);
-    when(cache.load()).thenReturn(purchase);
-
-    premiumer.bind();
-    final boolean consumed = premiumer.consumeSku();
-    assertThat(consumed).isTrue();
-    verify(cache, times(1)).clear();
-    verify(listener, times(1)).onSkuConsumed();
+    consumeSku(purchase);
   }
 
-  private void assertBound(boolean expected) {
-    if (expected) {
-      assertThat(binder.isBound()).isTrue();
-      verify(listener, times(1)).onBillingAvailable();
+  @Test public void checkShowAds() {
+    premiumer.bind();
+    assertBound(true);
+
+    assertThat(premiumer).isInstanceOf(SimplePremiumer.class);
+    final SimplePremiumer simplePremiumer = (SimplePremiumer) premiumer;
+
+    final boolean check = simplePremiumer.checkAds();
+    assertThat(check).isTrue();
+    assertInvokedOnce(listener).onHideAds();
+  }
+
+  private void assertBound(boolean bound) {
+    assertThat(binder.isBound()).isEqualTo(bound);
+    if (bound) {
+      assertInvokedOnce(listener).onBillingAvailable();
     } else {
-      assertThat(binder.isBound()).isFalse();
-      verify(listener, times(1)).onBillingUnavailable();
+      assertInvokedOnce(listener).onBillingUnavailable();
     }
   }
 
@@ -213,7 +253,7 @@ import static org.mockito.Mockito.when;
     boolean isBound;
 
     @NonNull @Override public IInAppBillingService service(IBinder binder) {
-      return new SuccessBillingService();
+      return new SuccessfulBillingService();
     }
 
     @NonNull @Override

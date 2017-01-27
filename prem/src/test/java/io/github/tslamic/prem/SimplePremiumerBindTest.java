@@ -6,45 +6,53 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import com.android.vending.billing.IInAppBillingService;
+import io.github.tslamic.prem.stub.BillingServiceStub;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-import static com.google.common.truth.Truth.assertThat;
+import static io.github.tslamic.prem.AssertUtil.assertInvokedNever;
+import static io.github.tslamic.prem.AssertUtil.assertInvokedOnce;
 import static io.github.tslamic.prem.Constant.BILLING_RESPONSE_RESULT_OK;
+import static org.mockito.Mockito.mock;
 
 @RunWith(RobolectricTestRunner.class) public class SimplePremiumerBindTest {
-  @Test public void bindNoBillingCapabilitiesNoBind() throws Exception {
+  @Test public void bindNoBillingCapabilitiesNoBind() {
     final Binder binder = new SimpleBinderMock(false, false);
     assertSimplePremiumer(binder, false);
   }
 
-  @Test public void bindNoBillingCapabilitiesBind() throws Exception {
+  @Test public void bindNoBillingCapabilitiesBind() {
     final Binder binder = new SimpleBinderMock(false, true);
     assertSimplePremiumer(binder, false);
   }
 
-  @Test public void bindBillingCapabilitiesNoBind() throws Exception {
+  @Test public void bindBillingCapabilitiesNoBind() {
     final Binder binder = new SimpleBinderMock(true, false);
     assertSimplePremiumer(binder, false);
   }
 
-  @Test public void bindBillingCapabilitiesBindServiceBillingNotSupported() throws Exception {
+  @Test public void bindBillingCapabilitiesBindServiceBillingNotSupported() {
     final Binder binder = new SimpleBinderMock(true, true, false);
     assertSimplePremiumer(binder, false);
   }
 
-  @Test public void bindBillingCapabilitiesBindServiceBillingSupported() throws Exception {
+  @Test public void bindBillingCapabilitiesBindServiceBillingSupported() {
     final Binder binder = new SimpleBinderMock(true, true, true);
     assertSimplePremiumer(binder, true);
   }
 
   private static void assertSimplePremiumer(@NonNull Binder binder, boolean isBound) {
-    final BillingAvailableListener listener = new BillingAvailableListener();
+    final PremiumerListener listener = mock(PremiumerListener.class);
     premiumer(listener, binder).bind();
-    assertThat(listener.onBillingAvailable).isEqualTo(isBound);
-    assertThat(listener.onBillingUnavailable).isEqualTo(!isBound);
+    if (isBound) {
+      assertInvokedOnce(listener).onBillingAvailable();
+      assertInvokedNever(listener).onBillingUnavailable();
+    } else {
+      assertInvokedNever(listener).onBillingAvailable();
+      assertInvokedOnce(listener).onBillingUnavailable();
+    }
   }
 
   private static Premiumer premiumer(@NonNull PremiumerListener listener, @NonNull Binder binder) {
@@ -52,20 +60,7 @@ import static io.github.tslamic.prem.Constant.BILLING_RESPONSE_RESULT_OK;
         .sku("dummy.sku")
         .listener(listener)
         .autoNotifyAds(false);
-    return new SimplePremiumer((PremiumerBuilder) builder, binder);
-  }
-
-  static class BillingAvailableListener extends PremiumerListenerStub {
-    boolean onBillingAvailable;
-    boolean onBillingUnavailable;
-
-    @Override public void onBillingAvailable() {
-      onBillingAvailable = true;
-    }
-
-    @Override public void onBillingUnavailable() {
-      onBillingUnavailable = true;
-    }
+    return TestFactory.premiumer(builder, binder);
   }
 
   static class SimpleBinderMock extends SimpleBinder {

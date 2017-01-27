@@ -7,49 +7,51 @@ import com.android.vending.billing.IInAppBillingService;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-@RunWith(RobolectricTestRunner.class) public class SimpleBillingNullTest extends BadBillingTest {
-  @Override public void isBillingSupported() throws Exception {
-    // Do nothing as response is non-null.
-  }
+import static io.github.tslamic.prem.Constant.BILLING_RESPONSE_RESULT_OK;
 
-  @Override public void consumeSku() throws Exception {
-    // Do nothing as response is non-null.
-  }
-
+@RunWith(RobolectricTestRunner.class) public class BillingBadResponseTest extends BadBillingTest {
   @Override IInAppBillingService service() {
-    return new NullBillingService();
+    return new BadResponseBillingService();
   }
 
-  static class NullBillingService implements IInAppBillingService {
+  private static final class BadResponseBillingService implements IInAppBillingService {
+    static final int BILLING_RESPONSE_RESULT_FAILURE = BILLING_RESPONSE_RESULT_OK - 1;
+
     @Override public int isBillingSupported(int apiVersion, String packageName, String type)
         throws RemoteException {
-      return 0;
+      return BILLING_RESPONSE_RESULT_FAILURE;
     }
 
     @Override
     public Bundle getSkuDetails(int apiVersion, String packageName, String type, Bundle skusBundle)
         throws RemoteException {
-      return null;
+      return badResponseBundle();
     }
 
     @Override
     public Bundle getBuyIntent(int apiVersion, String packageName, String sku, String type,
         String developerPayload) throws RemoteException {
-      return null;
+      return badResponseBundle();
     }
 
     @Override public Bundle getPurchases(int apiVersion, String packageName, String type,
         String continuationToken) throws RemoteException {
-      return null;
+      return badResponseBundle();
     }
 
     @Override public int consumePurchase(int apiVersion, String packageName, String purchaseToken)
         throws RemoteException {
-      return 0;
+      return BILLING_RESPONSE_RESULT_FAILURE;
     }
 
     @Override public IBinder asBinder() {
-      return null;
+      throw new AssertionError();
+    }
+
+    static Bundle badResponseBundle() {
+      final Bundle bundle = new Bundle(1);
+      bundle.putInt(Constant.RESPONSE_CODE, BILLING_RESPONSE_RESULT_FAILURE);
+      return bundle;
     }
   }
 }

@@ -22,7 +22,6 @@ class PremiumerHandler extends Handler {
   static final int ON_PURCHASE_BAD_RESULT = 10;
   static final int ON_PURCHASE_BAD_RESPONSE = 11;
   static final int ON_PURCHASE_FAILED_VERIFICATION = 12;
-  static final int ON_EXCEPTION = 13;
 
   private final PremiumerListener listener;
 
@@ -71,9 +70,6 @@ class PremiumerHandler extends Handler {
         break;
       case ON_PURCHASE_FAILED_VERIFICATION:
         listener.onPurchaseFailedVerification();
-        break;
-      case ON_EXCEPTION:
-        listener.onException((Exception) msg.obj);
         break;
       default:
         throw new AssertionError();

@@ -95,7 +95,7 @@ class SimpleBilling implements Billing {
     return false;
   }
 
-  static boolean responseOk(@Nullable Bundle bundle) {
+  private static boolean responseOk(@Nullable Bundle bundle) {
     return bundle != null && bundle.getInt(RESPONSE_CODE) == BILLING_RESPONSE_RESULT_OK;
   }
 }

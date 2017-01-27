@@ -1,47 +1,46 @@
 package io.github.tslamic.prem;
 
-import android.content.Intent;
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import java.util.concurrent.Executor;
 
 public interface Builder {
   /**
-   * Specify an {@link Executor}.
+   * Set the {@link Executor}.
    *
    * @throws NullPointerException if executor is {@code null}.
    */
   @NonNull Builder executor(@NonNull Executor executor);
 
   /**
-   * Specify if {@link PremiumerListener#onShowAds()} or {@link PremiumerListener#onHideAds()}
-   * should be automatically invoked after a successful bind, unbind, purchase or consumption.
-   *
-   * Set to {@code true} by default.
+   * If {@code true}, {@link PremiumerListener#onShowAds()} or {@link
+   * PremiumerListener#onHideAds()} will be automatically invoked after a successful bind,
+   * unbind, purchase or consumption. {@code true} by default.
    */
   @NonNull Builder autoNotifyAds(boolean autoNotifyAds);
 
   /**
-   * The integer result code returned by the in-app billing through its setResult(). Used to
-   * determine if {@link Premiumer#handleActivityResult(int, int, Intent)} should be processed.
+   * The integer code returned by the in-app billing after a {@link
+   * Premiumer#purchase(Activity)} request.
    */
   @NonNull Builder requestCode(int requestCode);
 
   /**
-   * Used to generate a developer-specified {@link String} containing
-   * supplemental information about a purchase. If none provided,
-   * {@link PayloadGenerator.UuidPayloadGenerator} is used.
+   * Generator for a developer-specified {@link String} containing
+   * supplemental information about a purchase. {@link PayloadGenerator.UuidPayloadGenerator} by
+   * default.
    *
-   * @throws NullPointerException if executor is {@code null}.
+   * @throws NullPointerException if generator is {@code null}.
    */
   @NonNull Builder payloadGenerator(@NonNull PayloadGenerator generator);
 
   /**
-   * Used to verify a {@link Purchase}.
+   * Verifies a {@link Purchase}. By default, no verification is performed.
    */
   @NonNull Builder purchaseVerifier(@NonNull PurchaseVerifier verifier);
 
   /**
-   * Used to store and retrieve a {@link Purchase}.
+   * Stores and retrieves a {@link Purchase}.
    * If none provided, {@link PurchaseCache.SharedPrefsCache} is used.
    */
   @NonNull Builder purchaseCache(@NonNull PurchaseCache cache);
@@ -61,14 +60,18 @@ public interface Builder {
 
   interface SkuProvider {
     /**
-     * Specify the sku name, e.g. {@code android.test.purchased}.
+     * Set the sku name, e.g. {@code android.test.purchased}.
+     *
+     * @throws NullPointerException if sku is {@code null}.
      */
     @NonNull ListenerProvider sku(@NonNull String sku);
   }
 
   interface ListenerProvider {
     /**
-     * Specify a {@link PremiumerListener} receiving {@link Premiumer} events.
+     * Set a {@link PremiumerListener} receiving {@link Premiumer} events.
+     *
+     * @throws NullPointerException if listener is {@code null}.
      */
     @NonNull Builder listener(@NonNull PremiumerListener listener);
   }

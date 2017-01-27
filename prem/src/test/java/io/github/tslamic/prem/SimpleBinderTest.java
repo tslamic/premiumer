@@ -1,59 +1,52 @@
 package io.github.tslamic.prem;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import edu.emory.mathcs.backport.java.util.Collections;
+import io.github.tslamic.prem.stub.ContextStub;
+import io.github.tslamic.prem.stub.PackageManagerStub;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 import static com.google.common.truth.Truth.assertThat;
+import static io.github.tslamic.prem.TestFactory.binder;
 import static io.github.tslamic.prem.Util.arrayList;
 import static org.mockito.Mockito.mock;
 
 @RunWith(RobolectricTestRunner.class) public class SimpleBinderTest {
-  private static Context queryServices(@Nullable final List<ResolveInfo> services) {
-    return new ContextStub() {
-      @Override public PackageManager getPackageManager() {
-        return new SimpleBinderPackageManager(services);
-      }
-    };
-  }
-
   private void assertBillingCapabilities(@NonNull Context context, boolean expected) {
-    final Binder binder = new SimpleBinder(context);
+    final Binder binder = binder(context);
     final Intent intent = new Intent();
     assertThat(binder.hasBillingCapabilities(intent)).isEqualTo(expected);
   }
 
-  @Test public void hasBillingCapabilitiesNull() throws Exception {
-    final Context context = queryServices(null);
+  @Test public void hasBillingCapabilitiesNull() {
+    final Context context = new SimpleBinderContext(null);
     assertBillingCapabilities(context, false);
   }
 
-  @Test public void hasBillingCapabilitiesEmpty() throws Exception {
-    final Context context = queryServices(Collections.emptyList());
-    assertBillingCapabilities(context, false);
-  }
-
-  @Test public void hasBillingCapabilitiesOk() throws Exception {
+  @Test public void hasBillingCapabilitiesEmpty() {
     final Context context = new SimpleBinderContext();
+    assertBillingCapabilities(context, false);
+  }
+
+  @Test public void hasBillingCapabilitiesOk() {
+    final List<ResolveInfo> list = arrayList(mock(ResolveInfo.class));
+    final Context context = new SimpleBinderContext(list);
     assertBillingCapabilities(context, true);
   }
 
-  @Test public void bind() throws Exception {
+  @Test public void bind() {
     final SimpleBinderContext context = new SimpleBinderContext();
     final Intent intent = new Intent();
-    final ServiceConnection connection = new Connection();
-    final Binder binder = new SimpleBinder(context);
+    final ServiceConnection connection = mock(ServiceConnection.class);
+    final Binder binder = binder(context);
 
     binder.bind(intent, connection, 0);
 
@@ -63,24 +56,24 @@ import static org.mockito.Mockito.mock;
     assertThat(binder.isBound()).isTrue();
   }
 
-  @Test public void bindFailure() throws Exception {
+  @Test public void bindFailure() {
     final Context context = new ContextStub() {
       @Override public boolean bindService(Intent service, ServiceConnection conn, int flags) {
         return false;
       }
     };
     final Intent intent = new Intent();
-    final ServiceConnection connection = new Connection();
-    final Binder binder = new SimpleBinder(context);
+    final ServiceConnection connection = mock(ServiceConnection.class);
+    final Binder binder = binder(context);
     binder.bind(intent, connection, 0);
     assertThat(binder.isBound()).isFalse();
   }
 
-  @Test public void unbind() throws Exception {
+  @Test public void unbind() {
     final SimpleBinderContext context = new SimpleBinderContext();
     final Intent intent = new Intent();
-    final ServiceConnection connection = new Connection();
-    final Binder binder = new SimpleBinder(context);
+    final ServiceConnection connection = mock(ServiceConnection.class);
+    final Binder binder = binder(context);
 
     binder.bind(intent, connection, 0);
     binder.unbind();
@@ -92,9 +85,18 @@ import static org.mockito.Mockito.mock;
   }
 
   static class SimpleBinderContext extends ContextStub {
+    final PackageManager manager;
     Intent service;
     ServiceConnection connection;
     int flags;
+
+    SimpleBinderContext() {
+      this(java.util.Collections.<ResolveInfo>emptyList());
+    }
+
+    SimpleBinderContext(List<ResolveInfo> services) {
+      this.manager = new SimpleBinderPackageManager(services);
+    }
 
     @Override public boolean bindService(Intent service, ServiceConnection conn, int flags) {
       this.service = service;
@@ -112,8 +114,7 @@ import static org.mockito.Mockito.mock;
     }
 
     @Override public PackageManager getPackageManager() {
-      final ResolveInfo info = mock(ResolveInfo.class);
-      return new SimpleBinderPackageManager(arrayList(info));
+      return manager;
     }
   }
 
@@ -126,19 +127,6 @@ import static org.mockito.Mockito.mock;
 
     @Override public List<ResolveInfo> queryIntentServices(Intent intent, int flags) {
       return services;
-    }
-  }
-
-  static class Connection implements ServiceConnection {
-    boolean onServiceConnected;
-    boolean onServiceDisconnected;
-
-    @Override public void onServiceConnected(ComponentName name, IBinder service) {
-      onServiceConnected = true;
-    }
-
-    @Override public void onServiceDisconnected(ComponentName name) {
-      onServiceDisconnected = true;
     }
   }
 }

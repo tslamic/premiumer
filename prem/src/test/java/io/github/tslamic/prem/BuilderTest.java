@@ -9,46 +9,47 @@ import org.robolectric.RuntimeEnvironment;
 
 import static com.google.common.truth.Truth.assertThat;
 import static io.github.tslamic.prem.TestUtil.SKU;
+import static org.mockito.Mockito.mock;
 
 @RunWith(RobolectricTestRunner.class) public class BuilderTest {
   private final Context context = RuntimeEnvironment.application;
-  private final PremiumerListener listener = new MockPremiumerListener();
 
   @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
-  public void contextNull() throws Exception {
+  public void contextNull() {
     PremiumerBuilder.with(null);
   }
 
   @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
-  public void skuNull() throws Exception {
+  public void skuNull() {
     PremiumerBuilder.with(context).sku(null).listener(null).build();
   }
 
-  @Test(expected = NullPointerException.class) public void listenerNullInBuild() throws Exception {
+  @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
+  public void listenerNullInBuild() {
     PremiumerBuilder.with(context).sku(SKU).listener(null).build();
   }
 
   @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
-  public void generatorNull() throws Exception {
+  public void generatorNull() {
     partialBuilder().payloadGenerator(null);
   }
 
   @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
-  public void verifierNull() throws Exception {
+  public void verifierNull() {
     partialBuilder().purchaseVerifier(null);
   }
 
   @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
-  public void cacheNull() throws Exception {
+  public void cacheNull() {
     partialBuilder().purchaseCache(null);
   }
 
   @SuppressWarnings("ConstantConditions") @Test(expected = NullPointerException.class)
-  public void signatureNull() throws Exception {
+  public void signatureNull() {
     partialBuilder().signatureBase64(null);
   }
 
-  @Test public void instance() throws Exception {
+  @Test public void instance() {
     final String signature = "signature";
     final boolean ads = false;
     final int requestCode = 666;
@@ -60,10 +61,16 @@ import static io.github.tslamic.prem.TestUtil.SKU;
         .autoNotifyAds(ads)
         .requestCode(requestCode)
         .signatureBase64(signature);
-    b.build();
 
-    assertThat(b).isInstanceOf(PremiumerBuilder.class);
     final PremiumerBuilder builder = (PremiumerBuilder) b;
+    assertThat(builder.payloadGenerator).isNull();
+    assertThat(builder.purchaseCache).isNull();
+    assertThat(builder.executor).isNull();
+
+    b.build();
+    assertThat(builder.payloadGenerator).isNotNull();
+    assertThat(builder.purchaseCache).isNotNull();
+    assertThat(builder.executor).isNotNull();
 
     assertThat(builder.context).isEqualTo(context);
     assertThat(builder.sku).isEqualTo(SKU);
@@ -78,6 +85,7 @@ import static io.github.tslamic.prem.TestUtil.SKU;
   }
 
   private Builder partialBuilder() {
+    final PremiumerListener listener = mock(PremiumerListener.class);
     return PremiumerBuilder.with(context).sku(SKU).listener(listener);
   }
 }
