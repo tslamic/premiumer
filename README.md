@@ -3,7 +3,13 @@
 Showing ads in your app? Wanna offer a single in-app purchase to remove them? Premiumer does just that!
 
 # How?
-Using Premiumer is incredibly easy. First, create an instance:
+Using Premiumer is incredibly easy. First, add the following dependency:
+
+```groovy
+compile 'com.github.tslamic:premiumer2:1.0'
+```
+
+Then, create an instance:
 
 ```java
 Premiumer premiumer = PremiumerBuilder.with(context)
@@ -12,7 +18,7 @@ Premiumer premiumer = PremiumerBuilder.with(context)
     .build();
 ```
 
-Then, bind to the underlying in-app billing service. This should usually follow the `Activity` or `Fragment` lifecycle. Also, ensure `premiumer` can handle purchase results by overriding `onActivityResult`. For example:
+Next, bind to the underlying in-app billing service. This should usually follow the `Activity` or `Fragment` lifecycle. Also, ensure `premiumer` can handle purchase results by overriding `onActivityResult`. For example:
 
 ```java
 @Override protected void onStart() {
