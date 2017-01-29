@@ -1,6 +1,8 @@
 apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 
+def isCi = 'true'.equals(System.getenv('CI'))
+
 android {
   compileSdkVersion 25
   buildToolsVersion "25.0.2"
@@ -44,4 +46,8 @@ task checkCodingStyle(type: Checkstyle) {
   }
   classpath = files()
   configFile = file("${rootProject.rootDir}/config/checkstyle/checkstyle.xml")
+}
+
+if (isCi) {
+  build.finalizedBy(checkCodingStyle)
 }
