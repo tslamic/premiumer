@@ -3,6 +3,7 @@
 Showing ads in your app? Wanna offer a single in-app purchase to remove them? Premiumer does just that!
 
 [![Build Status](https://travis-ci.org/tslamic/premiumer.svg?branch=master)](https://travis-ci.org/tslamic/premiumer)
+[![codecov](https://codecov.io/gh/tslamic/premiumer/branch/master/graph/badge.svg)](https://codecov.io/gh/tslamic/premiumer)
 
 # How?
 Using Premiumer is incredibly easy. First, add the following dependency:
