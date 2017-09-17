@@ -23,8 +23,8 @@ import static io.github.tslamic.prem.Util.isBlank;
 
 class SimplePremiumer implements Premiumer {
   private static final Intent BILLING_INTENT =
-      new Intent("com.android.vending.billing.InAppBillingService.BIND").setPackage(
-          "com.android.vending");
+      new Intent("com.android.vending.billing.InAppBillingService.BIND")
+          .setPackage("com.android.vending");
 
   private final ServiceConnection connection = new Connection();
   private final Binder binder;
@@ -66,7 +66,11 @@ class SimplePremiumer implements Premiumer {
     final boolean bound =
         binder.hasBillingCapabilities(BILLING_INTENT) && binder.bind(BILLING_INTENT, connection,
             Context.BIND_AUTO_CREATE); // listener.onBillingAvailable() will be invoked later.
-    if (!bound) {
+    if (bound) {
+      // Give user the benefit of the doubt and don't show ads
+      // until we can properly verify they should be shown.
+      listener.onHideAds();
+    } else {
       listener.onBillingUnavailable();
     }
   }
